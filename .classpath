@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="app/src/androidTest/java"/>
+	<classpathentry kind="src" path="app/src/main/java"/>
+	<classpathentry kind="src" path="app/src/test/java"/>
+	<classpathentry kind="src" path="dht/src"/>
+	<classpathentry kind="src" path="tracker/src"/>
+	<classpathentry kind="lib" path="app/libs/bcpg-jdk15on-1.58.0.0.jar"/>
+	<classpathentry kind="lib" path="app/libs/bcpkix-jdk15on-1.58.0.0.jar"/>
+	<classpathentry kind="lib" path="app/libs/core-1.58.0.0.jar"/>
+	<classpathentry kind="lib" path="app/libs/dht.jar"/>
+	<classpathentry kind="lib" path="app/libs/gcm-server-1.0.2.jar"/>
+	<classpathentry kind="lib" path="app/libs/java-json.jar"/>
+	<classpathentry kind="lib" path="app/libs/json-simple-1.1.jar"/>
+	<classpathentry kind="lib" path="app/libs/mapdb-1.0.6.jar"/>
+	<classpathentry kind="lib" path="app/libs/netty-buffer-4.0.28.Final.jar"/>
+	<classpathentry kind="lib" path="app/libs/netty-common-4.0.28.Final.jar"/>
+	<classpathentry kind="lib" path="app/libs/netty-transport-4.0.28.Final.jar"/>
+	<classpathentry kind="lib" path="app/libs/prov-1.58.0.0.jar"/>
+	<classpathentry kind="lib" path="app/libs/slf4j-api-1.7.5.jar"/>
+	<classpathentry kind="lib" path="app/libs/tomp2p-all-5.0-Beta8.jar"/>
+	<classpathentry kind="lib" path="app/libs/tomp2p-android-5.0-Beta8.jar"/>
+	<classpathentry kind="lib" path="app/libs/tomp2p-core-5.0-Beta8.jar"/>
+	<classpathentry kind="lib" path="app/libs/tomp2p-dht-5.0-Beta8.jar"/>
+	<classpathentry kind="lib" path="app/libs/tomp2p-nat-5.0-Beta8.jar"/>
+	<classpathentry kind="lib" path="app/libs/tomp2p-replication-5.0-Beta8.jar"/>
+	<classpathentry kind="lib" path="app/libs/tomp2p-storage-5.0-Beta8.jar"/>
+	<classpathentry kind="lib" path="app/libs/tomp2p-tracker-5.0-Beta8.jar"/>
+	<classpathentry kind="lib" path="app/libs/weupnp-0.1.2.jar"/>
+	<classpathentry kind="lib" path="gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

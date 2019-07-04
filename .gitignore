@@ -1,0 +1,12 @@
+*.iml
+.gradle
+.gradle/Users/filippecarvalho/Documents/Git/base-android/.gitignore
+/local.properties
+/.idea/workspace.xml
+/app/mirror
+/.idea/libraries
+/.idea
+.DS_Store
+/build
+/captures
+/.gradle/
