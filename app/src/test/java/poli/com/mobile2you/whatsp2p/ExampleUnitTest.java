@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.spongycastle.util.encoders.Hex;
 
 import static com.poli.usp.erichain.data.local.Utils.hexStringToByteArray;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import com.poli.usp.erichain.data.local.HashManager;
 import com.poli.usp.erichain.data.local.Utils;

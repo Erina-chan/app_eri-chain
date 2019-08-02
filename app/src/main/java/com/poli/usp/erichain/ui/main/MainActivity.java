@@ -29,6 +29,8 @@ import com.poli.usp.erichain.data.local.PGPManager;
 import com.poli.usp.erichain.data.local.PGPManagerSingleton;
 import com.poli.usp.erichain.data.local.PreferencesHelper;
 import com.poli.usp.erichain.data.local.ProgressDialogHelper;
+import com.poli.usp.erichain.data.local.SignatureECDSAManager;
+import com.poli.usp.erichain.data.local.SignatureECDSAManagerSingleton;
 import com.poli.usp.erichain.data.local.Utils;
 import com.poli.usp.erichain.data.remote.models.SignatureResponse;
 import com.poli.usp.erichain.ui.base.BaseActivity;
@@ -80,7 +82,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
     RecyclerView mRecyclerView;
 
     // public String trackerAddress = "13.59.232.73";
-    public String trackerAddress = "192.168.1.108";
+    public String trackerAddress = "192.168.1.100";
     // public String trackerAddress = "FE80:0:0:0:7CEB:534A:C5BF:870D";
     public int trackerPort = 4001;
 
@@ -403,7 +405,8 @@ public class MainActivity extends BaseActivity implements MainMvpView {
                     }
                     final InetSocketAddress address = (InetSocketAddress) DHT.getProtected("chatAddress", signPublicKey);
                     final byte[] chatPublicKeyRingEncoded = (byte[]) DHT.getProtected("chatPublicKey", signPublicKey);
-                    if (address == null || chatPublicKeyRingEncoded == null) {
+                    final byte[] ecdsaPublicKeyRingEncoded = (byte[]) DHT.getProtected("ecdsaPublicKey", signPublicKey); //TODO: Aqui tá pegando a chave ECDSA pública. Ver como usar.
+                    if (address == null || chatPublicKeyRingEncoded == null || ecdsaPublicKeyRingEncoded == null) {
                         throw new ContactNotFoundException();
                     }
                     final String ip = address.getHostName();
@@ -411,7 +414,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mMainPresenter.addContact(getApplicationContext(), username, ip, port, signPublicKey.getEncoded(), chatPublicKeyRingEncoded);
+                            mMainPresenter.addContact(getApplicationContext(), username, ip, port, signPublicKey.getEncoded(), chatPublicKeyRingEncoded, ecdsaPublicKeyRingEncoded);
                         }
                     });
                     progressDialog.hide();
@@ -501,6 +504,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
                     me.setPort(mChatPort);
                     me.setSignPublicKeyEncoded(signKeyPair.getPublic().getEncoded());
                     me.setChatPublicKeyRingEncoded(PGPManagerSingleton.getInstance().getPublicKeyRing().getEncoded());
+                    me.setEcdsaPublicKeyRingEncoded(SignatureECDSAManagerSingleton.getInstance().getEcdsaPublicKeyRing().getEncoded());
                     DHT.start(thisNode, mDHTPort);
                     if (DHT.connectTo(trackerAddress, trackerPort)) {
                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(Constants.FILTER_DHT_CONNECTION));
@@ -650,11 +654,17 @@ public class MainActivity extends BaseActivity implements MainMvpView {
                             Log.i("DHT", "[DHT] Chat address update failed: " + fput.failedReason());
                             showMessage("Atualização de endereço de chat falhou!");
                         }
-                        Log.i("DHT", "[DHT] Broadcasting my public chat key");
+                        Log.i("DHT", "[DHT] Broadcasting my public PGP chat key");
                         fput = DHT.putProtected("chatPublicKey", PGPManagerSingleton.getInstance().getPublicKeyRing().getEncoded());
                         if (fput.isFailed()) {
-                            Log.i("DHT", "[DHT] Chat public key update failed: " + fput.failedReason());
+                            Log.i("DHT", "[DHT] Chat public key PGP update failed: " + fput.failedReason());
                             showMessage("Atualização de chave PGP pública falhou!");
+                        }
+                        Log.i("DHT", "[DHT] Broadcasting my public ECDSA chat key");
+                        fput = DHT.putProtected("ecdsaPublicKey", SignatureECDSAManagerSingleton.getInstance().getEcdsaPublicKeyRing().getEncoded());
+                        if (fput.isFailed()) {
+                            Log.i("DHT", "[DHT] Chat public key ECDSA update failed: " + fput.failedReason());
+                            showMessage("Atualização de chave ECDSA pública falhou!");
                         }
                         showMessage("Conectado à rede DHT!");
                     } catch (DHTException.UsernameAlreadyTakenException e) {

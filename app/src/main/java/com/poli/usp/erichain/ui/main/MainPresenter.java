@@ -12,7 +12,7 @@ import rx.Subscription;
 
 /**
  * Created by mobile2you on 28/11/16.
- * Modified by aerina on 23/08/18.
+ * Modified by aerina on 01/08/19.
  */
 
 public class MainPresenter extends BasePresenter<MainMvpView> {
@@ -49,12 +49,13 @@ public class MainPresenter extends BasePresenter<MainMvpView> {
         mMainMvpView.showContacts(mCachedContacts);
     }
 
-    public void addContact(Context context, String username, String ip, int port, byte[] signPublicKeyEncoded, byte[] chatPublicKeyRingEncoded){
+    public void addContact(Context context, String username, String ip, int port, byte[] signPublicKeyEncoded, byte[] chatPublicKeyRingEncoded, byte[] ecdsaPublicKeyRingEncoded){
         Contact contact = new Contact(username);
         contact.setIp(ip);
         contact.setPort(port);
         contact.setSignPublicKeyEncoded(signPublicKeyEncoded);
         contact.setChatPublicKeyRingEncoded(chatPublicKeyRingEncoded);
+        contact.setEcdsaPublicKeyRingEncoded(ecdsaPublicKeyRingEncoded);
         addContact(context, contact);
 
     }
