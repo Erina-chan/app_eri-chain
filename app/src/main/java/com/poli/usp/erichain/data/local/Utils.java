@@ -3,6 +3,8 @@ package com.poli.usp.erichain.data.local;
 /**
  * Created by mayerlevy on 9/17/17.
  * Modified by aerina on 23/08/18.
+ * Modified by aerina on 13-Jul-21.
+ * Modified by aerina on 6-Apr-22.
  */
 
 import android.content.Context;
@@ -142,7 +144,7 @@ public class Utils {
 
             KeyPairGenerator kpg = KeyPairGenerator.getInstance(type, "SC");
             SecureRandom secRandom = SecureRandom.getInstance("SHA1PRNG");
-            kpg.initialize(1024, secRandom);
+            kpg.initialize(256, secRandom); // TODO acertar esse pedaço...que tá gerando os erros (vide telegram)
 
             KeyPair keyPair = kpg.generateKeyPair();
             X509Certificate cert = generateCertificate(type, keyPair);
@@ -173,7 +175,7 @@ public class Utils {
         v3CertGen.setNotAfter(new Date(System.currentTimeMillis() + (1000L * 60 * 60 * 24 * 365*10)));
         v3CertGen.setSubjectDN(new X509Principal("CN=whatsp2p, OU=None, O=None L=None, C=None"));
         v3CertGen.setPublicKey(keyPair.getPublic());
-        v3CertGen.setSignatureAlgorithm("SHA1with" + type);
+        v3CertGen.setSignatureAlgorithm("SHA1with" + type + "DSA");
         return v3CertGen.generateX509Certificate(keyPair.getPrivate());
     }
 

@@ -26,6 +26,7 @@ import org.spongycastle.openpgp.PGPSignature;
 import org.spongycastle.openpgp.PGPSignatureGenerator;
 import org.spongycastle.openpgp.PGPSignatureSubpacketGenerator;
 import org.spongycastle.openpgp.operator.PBESecretKeyDecryptor;
+import org.spongycastle.openpgp.operator.PBESecretKeyEncryptor;
 import org.spongycastle.openpgp.operator.PGPDigestCalculator;
 import org.spongycastle.openpgp.operator.bc.BcPBESecretKeyDecryptorBuilder;
 import org.spongycastle.openpgp.operator.bc.BcPGPDigestCalculatorProvider;
@@ -85,7 +86,7 @@ public class SignatureECDSAManager {
             throws Exception {
 
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ECDSA", "SC");
-        keyGen.initialize(new ECGenParameterSpec("X25519"));
+        keyGen.initialize(new ECGenParameterSpec("curve25519"));
         KeyPair kpSign = keyGen.generateKeyPair();
         PGPKeyPair ecdsaKeyPair = new JcaPGPKeyPair(PGPPublicKey.ECDSA, kpSign, new Date());
 
@@ -98,10 +99,13 @@ public class SignatureECDSAManager {
                 new BcPGPDigestCalculatorProvider().get(HashAlgorithmTags.SHA256);
 
         // generate a key ring
+        JcePBESecretKeyEncryptorBuilder jcebuilder = new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha256Calc);
+        jcebuilder.setProvider("SC");
+        PBESecretKeyEncryptor encryptor = jcebuilder.build(passwd);
         PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION,
                 ecdsaKeyPair, id, sha256Calc, null, null,
                 new JcaPGPContentSignerBuilder(ecdsaKeyPair.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA256),
-                new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, sha256Calc).setProvider("SC").build(passwd));
+                encryptor);
 
         return keyRingGen;
     }

@@ -175,7 +175,7 @@ public class ChatActivity extends BaseActivity implements ChatMvpView{
                                     updateActionBar();
                                     progressDialog.hide();
                                 }
-                                if (chatClient.isConnected() && chatClient.sendMessage(message)) {
+                                if (chatClient.isConnected() && chatClient.sendMessage(message, getApplicationContext())) {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -403,7 +403,7 @@ public class ChatActivity extends BaseActivity implements ChatMvpView{
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        if (chatClient.isConnected() && chatClient.sendMessage(message)) {
+                        if (chatClient.isConnected() && chatClient.sendMessage(message, getApplicationContext())) {
                             showToast("Certificado atualizado! Por favor aguarde alguns segundos para as mudanças fazerem efeito");
                             try {
                                 Thread.sleep(5000);

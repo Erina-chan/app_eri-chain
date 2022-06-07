@@ -8,7 +8,9 @@ import com.poli.usp.erichain.Constants;
 
 /**
  * Created by Bruno on 15-Aug-17.
- * Modified by aerina 14-11-2018.
+ * Modified by aerina on 14-11-2018.
+ * Modified by aerina on 12-7-2021.
+ * Modified by aerina on 9-may-2022.
  */
 
 public class BaseSQLiteOpenHelper extends SQLiteOpenHelper {
@@ -21,9 +23,9 @@ public class BaseSQLiteOpenHelper extends SQLiteOpenHelper {
         db.execSQL("create table " + Constants.DB_CONTACTS_TABLE + " (" +
                 Constants.DB_CONTACT_FIELD_ID + " text primary key, " +
                 Constants.DB_CONTACT_FIELD_NAME + " text, " +
-                Constants.DB_CONTACT_FIELD_IP + " text, "+
-                Constants.DB_CONTACT_FIELD_PORT + " text, "+
-                Constants.DB_CONTACT_FIELD_SIGN_ENCODED_KEY + " blob, "+
+                Constants.DB_CONTACT_FIELD_IP + " text, " +
+                Constants.DB_CONTACT_FIELD_PORT + " text, " +
+                Constants.DB_CONTACT_FIELD_SIGN_ENCODED_KEY + " blob, " +
                 Constants.DB_CONTACT_FIELD_CHAT_ENCODED_KEY + " blob)"
         );
         db.execSQL("create table " + Constants.DB_MESSAGES_TABLE + " (" +
@@ -34,7 +36,8 @@ public class BaseSQLiteOpenHelper extends SQLiteOpenHelper {
                 Constants.DB_MESSAGES_FIELD_RECEIVER_NAME + " text, " +
                 Constants.DB_MESSAGES_FIELD_TEXT + " text, " +
                 Constants.DB_MESSAGES_FIELD_SENT_AT + " DATETIME, " +
-                Constants.DB_MESSAGES_FIELD_PREV_HASH + " blob)"
+                Constants.DB_MESSAGES_FIELD_PREV_HASH + " blob, " +
+                Constants.DB_MESSAGES_FIELD_MESSAGE_COUNTER + " blob)"
         );
     }
 

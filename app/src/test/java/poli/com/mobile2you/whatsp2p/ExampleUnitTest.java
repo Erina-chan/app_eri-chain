@@ -1,8 +1,13 @@
 package poli.com.mobile2you.whatsp2p;
 
+import android.content.ContextWrapper;
+
 import org.junit.Test;
+import org.spongycastle.jce.interfaces.ECPrivateKey;
+import org.spongycastle.jce.interfaces.ECPublicKey;
 import org.spongycastle.util.encoders.Hex;
 
+import static com.poli.usp.erichain.data.local.ECDHManager.ECDHKeyExchange;
 import static com.poli.usp.erichain.data.local.Utils.hexStringToByteArray;
 import static org.junit.Assert.assertEquals;
 
@@ -12,12 +17,23 @@ import com.poli.usp.erichain.data.remote.models.MessageResponse;
 import com.poli.usp.erichain.data.local.Contact;
 
 import java.io.IOException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.Security;
+import java.security.spec.ECGenParameterSpec;
 import java.util.Arrays;
+
+import javax.crypto.KeyAgreement;
 
 /**
  * To work on unit tests, switch the Test Artifact in the Build Variants view.
  */
 public class ExampleUnitTest {
+
+    static {
+        Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
+    }
+
     @Test
     public void addition_isCorrect() throws Exception {
         assertEquals(4, 2 + 2);
@@ -60,7 +76,7 @@ public class ExampleUnitTest {
         assertEquals(false, MessageResponse.verifyPrevHash(messageTest1, messageTest2));  // test with param prevHash != hash(prevMessage)
     }
 
-    @Test //not ok...
+    @Test //not ok... Need to change the code to provide selective disclosure
     public void messageGenerateHash_isCorrect(){
         Contact sender = new Contact("sender");
         Contact receiver = new Contact("receiver");
@@ -80,5 +96,50 @@ public class ExampleUnitTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    // TODO verify ECDSA -> Test class SignatureECDSAManager and verify class SignECDSABenchmark
+
+    @Test //ok
+    public void ecdhKeyExchangeTest() throws Exception {
+        // Using ECDH algorithm by Spongy Castle library.
+        // secp224k1 EC parameter is a 224-bit prime field Weierstrass curve, a Koblitz curve.
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("ECDH", "SC");
+        kpg.initialize(new ECGenParameterSpec("secp224k1"));
+
+        // Generate user key pair to ECDH
+        KeyPair kp = kpg.generateKeyPair();
+        ECPrivateKey secKey = (ECPrivateKey) kp.getPrivate();
+        ECPublicKey pubKey = (ECPublicKey) kp.getPublic();
+
+        KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", "SC");
+        keyAgreement.init(secKey);
+        keyAgreement.doPhase(pubKey, true);
+        byte[] sharedKey = keyAgreement.generateSecret();
+
+        byte[] sharedSecret = ECDHKeyExchange(secKey, pubKey);
+        assertEquals(Hex.toHexString(sharedKey), Hex.toHexString(sharedSecret));
+    }
+
+    @Test //TODO continuar daqui, depois ver o ECDSA
+    public void FullEcdhKeyExchange(){
+        // Generate Contact A
+        // Genetare Contact A 's ECDH key pair
+        // Save Contact A 's ECDH public key at DHT
+        Contact userA = new Contact("userA");
+
+        // Generate Contact B
+        // Genetare Contact B 's ECDH key pair
+        // Save Contact B 's ECDH public key at DHT
+        Contact userB = new Contact("userB");
+
+        // User A catches User B informations (ECDH public key) from DHT
+        // User A generates shared key
+
+        // User B catches User A informations (ECDH public key) from DHT
+        // User B generates shared key
+
+        // Compare SheredKeyA == SharedKeyB? I hope soo.
+        //assertEquals(Hex.toHexString(sharedKeyA), Hex.toHexString(sharedKeyB));
     }
 }

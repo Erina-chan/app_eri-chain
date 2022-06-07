@@ -19,6 +19,7 @@ import static com.poli.usp.erichain.data.local.Utils.hexStringToByteArray;
 /**
  * Created by Bruno on 13-Aug-17.
  * Modified by aerina on 23/08/18.
+ * Modified by aerina on 12/07/21.
  */
 
 public class MessageDatabaseHelper {

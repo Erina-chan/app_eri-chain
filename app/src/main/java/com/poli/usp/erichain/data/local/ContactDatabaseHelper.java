@@ -15,6 +15,8 @@ import com.poli.usp.erichain.Constants;
 /**
  * Created by Bruno on 14-Aug-17.
  * Modified by aerina on 13/09/2018.
+ * Modified by aerina on 12/07/2021.
+ * Modified by aerina on 9-may-2022.
  */
 
 public class ContactDatabaseHelper {

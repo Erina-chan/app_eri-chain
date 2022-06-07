@@ -1,5 +1,10 @@
 package com.poli.usp.erichain.ui.main;
 
+/**
+ * Modified by aerina on 12/7/2021
+ * Modified by aerina on 10/5/2022
+ */
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -29,8 +34,7 @@ import com.poli.usp.erichain.data.local.PGPManager;
 import com.poli.usp.erichain.data.local.PGPManagerSingleton;
 import com.poli.usp.erichain.data.local.PreferencesHelper;
 import com.poli.usp.erichain.data.local.ProgressDialogHelper;
-import com.poli.usp.erichain.data.local.SignatureECDSAManager;
-import com.poli.usp.erichain.data.local.SignatureECDSAManagerSingleton;
+import com.poli.usp.erichain.data.local.SignECDSABenchmark;
 import com.poli.usp.erichain.data.local.Utils;
 import com.poli.usp.erichain.data.remote.models.SignatureResponse;
 import com.poli.usp.erichain.ui.base.BaseActivity;
@@ -49,12 +53,16 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.util.Calendar;
 import java.util.List;
 
 import poli.com.mobile2you.whatsp2p.R;
 
 import com.poli.usp.erichain.data.remote.models.MessageResponse;
 import com.poli.usp.erichain.ui.common.TrustDialogFragment;
+
+import org.spongycastle.openpgp.PGPSignature;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -82,7 +90,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
     RecyclerView mRecyclerView;
 
     // public String trackerAddress = "13.59.232.73";
-    public String trackerAddress = "192.168.1.100";
+    public String trackerAddress = "192.168.15.3";
     // public String trackerAddress = "FE80:0:0:0:7CEB:534A:C5BF:870D";
     public int trackerPort = 4001;
 
@@ -141,10 +149,10 @@ public class MainActivity extends BaseActivity implements MainMvpView {
                 return true;
             }
         }, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mMainPresenter.loadContacts(v.getContext());
-                }
+            @Override
+            public void onClick(View v) {
+                mMainPresenter.loadContacts(v.getContext());
+            }
         });
         mRecyclerView.setAdapter(mAdapter);
         setActionBar("Eri-chain"); // app_name
@@ -152,7 +160,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         mUserId = PreferencesHelper.getInstance().getUserId();
         if (mUserId.equals("")) {
             showUserNameDialog();
-        } else if (!mInitialized){
+        } else if (!mInitialized) {
             initialize();
         }
 
@@ -190,7 +198,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         });
     }
 
-    public void showNewContactDialog(){
+    public void showNewContactDialog() {
         LayoutInflater li = LayoutInflater.from(this);
         View dialogView = li.inflate(R.layout.dialog_add_contact, null);
         // create alert dialog
@@ -198,7 +206,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         alertDialog.show();
     }
 
-    public void showEditContactDialog(Contact contact){
+    public void showEditContactDialog(Contact contact) {
         LayoutInflater li = LayoutInflater.from(this);
         View dialogView = li.inflate(R.layout.dialog_add_contact, null);
         // create alert dialog
@@ -207,15 +215,15 @@ public class MainActivity extends BaseActivity implements MainMvpView {
     }
 
 
-    public void showContactSettingsDialog(final Contact contact){
-        CharSequence options[] = new CharSequence[] {"Editar", "Apagar Mensagens", "Deletar"};
+    public void showContactSettingsDialog(final Contact contact) {
+        CharSequence options[] = new CharSequence[]{"Edit", "Clear messages", "Delete"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(contact.getName());
         builder.setItems(options, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                switch (which){
+                switch (which) {
                     case 0:
                         showEditContactDialog(contact);
                         break;
@@ -231,7 +239,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         builder.show();
     }
 
-    public void showUserNameDialog(){
+    public void showUserNameDialog() {
         LayoutInflater li = LayoutInflater.from(this);
         View dialogView = li.inflate(R.layout.dialog_set_username, null);
         // create alert dialog
@@ -239,7 +247,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         alertDialog.show();
     }
 
-    public void showEditUserNameDialog(){
+    public void showEditUserNameDialog() {
         LayoutInflater li = LayoutInflater.from(this);
         View dialogView = li.inflate(R.layout.dialog_set_username, null);
         // create alert dialog
@@ -247,7 +255,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         alertDialog.show();
     }
 
-    public void showDirectConnectionDialog(){
+    public void showDirectConnectionDialog() {
         LayoutInflater li = LayoutInflater.from(this);
         View dialogView = li.inflate(R.layout.dialog_direct_connection, null);
         // create alert dialog
@@ -255,7 +263,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         alertDialog.show();
     }
 
-    public AlertDialog.Builder getNewContactDialogBuilder(View dialogView){
+    public AlertDialog.Builder getNewContactDialogBuilder(View dialogView) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                 this);
 
@@ -266,23 +274,23 @@ public class MainActivity extends BaseActivity implements MainMvpView {
 
         // set dialog message
         alertDialogBuilder
-            .setCancelable(false)
-            .setPositiveButton("Adicionar", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog,int id) {
-                    String username = userInput.getText().toString();
-                    addContact(username);
-                }
-            })
-            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog,int id) {
-                    dialog.cancel();
-                }
-            });
+                .setCancelable(false)
+                .setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        String username = userInput.getText().toString();
+                        addContact(username);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
         return alertDialogBuilder;
 
     }
 
-    public AlertDialog.Builder getEditContactDialogBuilder(View dialogView, final Contact contact){
+    public AlertDialog.Builder getEditContactDialogBuilder(View dialogView, final Contact contact) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                 this);
 
@@ -295,24 +303,24 @@ public class MainActivity extends BaseActivity implements MainMvpView {
 
         // set dialog message
         alertDialogBuilder
-            .setCancelable(false)
-            .setPositiveButton("Editar", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog,int id) {
-                    String username = userInput.getText().toString();
-                    contact.setId(username);
-                    editContact(contact);
-                }
-            })
-            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog,int id) {
-                    dialog.cancel();
-                }
-            });
+                .setCancelable(false)
+                .setPositiveButton("Edit", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        String username = userInput.getText().toString();
+                        contact.setId(username);
+                        editContact(contact);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
         return alertDialogBuilder;
 
     }
 
-    public AlertDialog.Builder getUserNameDialogBuilder(View dialogView){
+    public AlertDialog.Builder getUserNameDialogBuilder(View dialogView) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                 this);
 
@@ -326,8 +334,8 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         // set dialog message
         alertDialogBuilder
                 .setCancelable(false)
-                .setPositiveButton("Salvar", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,int id) {
+                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
                         String userName = editTextUserName.getText().toString();
                         PreferencesHelper.getInstance().putUserId(userName);
                         String userPassword = editTextPassword.getText().toString();
@@ -340,7 +348,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
 
     }
 
-    public AlertDialog.Builder editUserNameDialogBuilder(View dialogView){
+    public AlertDialog.Builder editUserNameDialogBuilder(View dialogView) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                 this);
 
@@ -353,8 +361,8 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         // set dialog message
         alertDialogBuilder
                 .setCancelable(false)
-                .setPositiveButton("Salvar", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,int id) {
+                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
                         String userName = userInput.getText().toString();
                         PreferencesHelper.getInstance().putUserId(userName);
                         mUserId = userName;
@@ -364,13 +372,13 @@ public class MainActivity extends BaseActivity implements MainMvpView {
 
     }
 
-    public AlertDialog.Builder directConnectionDialogBuilder(View dialogView){
+    public AlertDialog.Builder directConnectionDialogBuilder(View dialogView) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                 this);
 
         alertDialogBuilder.setView(dialogView);
 
-//        final EditText editTextName = (EditText) dialogView
+//      final EditText editTextName = (EditText) dialogView
 //                .findViewById(R.id.edit_text_user_name);
         final EditText editTextIP = (EditText) dialogView
                 .findViewById(R.id.edit_text_contact_ip);
@@ -380,9 +388,9 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         // set dialog message
         alertDialogBuilder
                 .setCancelable(true)
-                .setPositiveButton("Connectar", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,int id) {
-                        String name = "Conexão Direta";//editTextName.getText().toString();
+                .setPositiveButton("Connect", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        String name = "Direct connection";//editTextName.getText().toString();
                         // TODO Insert a verification if editTextIP and editTextPort are not null.
                         String ip = editTextIP.getText().toString();
                         int port = Integer.parseInt(editTextPort.getText().toString());
@@ -399,14 +407,14 @@ public class MainActivity extends BaseActivity implements MainMvpView {
             public void run() {
                 try {
                     progressDialog.show("Buscando usuário...");
-                    final PublicKey signPublicKey = (PublicKey) DHT.get(username);
+                    final PublicKey signPublicKey = (PublicKey) DHT.get(username);  // There is ECDSA Public Key
                     if (signPublicKey == null) {
                         throw new ContactNotFoundException();
                     }
                     final InetSocketAddress address = (InetSocketAddress) DHT.getProtected("chatAddress", signPublicKey);
-                    final byte[] chatPublicKeyRingEncoded = (byte[]) DHT.getProtected("chatPublicKey", signPublicKey);
-                    final byte[] ecdsaPublicKeyRingEncoded = (byte[]) DHT.getProtected("ecdsaPublicKey", signPublicKey); //TODO: Aqui tá pegando a chave ECDSA pública. Ver como usar.
-                    if (address == null || chatPublicKeyRingEncoded == null || ecdsaPublicKeyRingEncoded == null) {
+                    final byte[] chatPublicKeyRingEncoded = (byte[]) DHT.getProtected("chatPublicKey", signPublicKey);  // There is PGP public key
+                    // TODO Get here the EGDH public key
+                    if (address == null || chatPublicKeyRingEncoded == null) {
                         throw new ContactNotFoundException();
                     }
                     final String ip = address.getHostName();
@@ -414,7 +422,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mMainPresenter.addContact(getApplicationContext(), username, ip, port, signPublicKey.getEncoded(), chatPublicKeyRingEncoded, ecdsaPublicKeyRingEncoded);
+                            mMainPresenter.addContact(getApplicationContext(), username, ip, port, signPublicKey.getEncoded(), chatPublicKeyRingEncoded);
                         }
                     });
                     progressDialog.hide();
@@ -434,22 +442,21 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         }).start();
     }
 
-    public void editContact(Contact contact){
+
+    public void editContact(Contact contact) {
         mMainPresenter.updateContact(this, contact);
     }
 
-    public void deleteContact(Contact contact){
+    public void deleteContact(Contact contact) {
         mMainPresenter.deleteConversation(this, contact);
         mMainPresenter.deleteContact(this, contact);
     }
 
-    public void deleteConversation(Contact contact){
+    public void deleteConversation(Contact contact) {
         mMainPresenter.deleteConversation(this, contact);
     }
 
-
-
-    public boolean validate(final String ip){
+    public boolean validate(final String ip) {
         matcher = pattern.matcher(ip);
         return matcher.matches();
     }
@@ -457,7 +464,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
     public void createDirectConnection(String name, String ip, int port) {
 
         pattern = Pattern.compile(IPADDRESS_PATTERN);
-        matcher = pattern.matcher(ip);  // verify with regex if this is a IPv4 number
+        matcher = pattern.matcher(ip);  // verify with regex if this is a IP number
         if (matcher.matches() && port > 0 && port < 65536) {
             try {
                 if (DHT.connectTo(ip, port)) {
@@ -466,17 +473,16 @@ public class MainActivity extends BaseActivity implements MainMvpView {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        else {
-            System.out.println("Número de IP inválido.");
+        } else {
+            System.out.println("Invalid IP address.");
         }
     }
 
     private void buildPGPManager() {
         try {
-            progressDialog.show("Obtendo chaves de segurança...");
+            progressDialog.show("Getting security keys...");
             String userPassword = PreferencesHelper.getInstance().getUserPassword();
-            PGPManagerSingleton.initialize(new PGPManager(this.getApplicationContext(), PreferencesHelper.getInstance().getUserId(),userPassword.toCharArray()));
+            PGPManagerSingleton.initialize(new PGPManager(this.getApplicationContext(), PreferencesHelper.getInstance().getUserId(), userPassword.toCharArray()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -488,11 +494,12 @@ public class MainActivity extends BaseActivity implements MainMvpView {
             @Override
             public void run() {
                 try {
-                    progressDialog.show("Conectando ao tracker...");
+                    progressDialog.show("Connecting to tracker...");
                     String mUserId = PreferencesHelper.getInstance().getUserId();
                     Number160 peerId = DHT.createPeerID(mUserId);
                     DHTNode thisNode = new DHTNode(peerId);
-                    KeyPair signKeyPair = Utils.getKeyPairFromKeyStore(getApplicationContext(), "DSA"); // TODO: mudar o DSA para outro
+                    // https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#KeyPairGenerator
+                    KeyPair signKeyPair = Utils.getKeyPairFromKeyStore(getApplicationContext(), "EC");
                     if (signKeyPair == null) {
                         throw new KeyPairNullException();
                     }
@@ -504,16 +511,17 @@ public class MainActivity extends BaseActivity implements MainMvpView {
                     me.setPort(mChatPort);
                     me.setSignPublicKeyEncoded(signKeyPair.getPublic().getEncoded());
                     me.setChatPublicKeyRingEncoded(PGPManagerSingleton.getInstance().getPublicKeyRing().getEncoded());
-                    me.setEcdsaPublicKeyRingEncoded(SignatureECDSAManagerSingleton.getInstance().getEcdsaPublicKeyRing().getEncoded());
+                    // TODO Add ECDH key ring here.
                     DHT.start(thisNode, mDHTPort);
                     if (DHT.connectTo(trackerAddress, trackerPort)) {
                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(Constants.FILTER_DHT_CONNECTION));
                     }
                     //nodeDiscovery.startLookup();
+
                 } catch (DHTException.UsernameAlreadyTakenException e) {
-                    showToast("Usuário não está disponível!");
+                    showToast("This username is not available!");
                 } catch (KeyPairNullException e) {
-                    showToast("Não foi possível gerar chaves DSA!");
+                    showToast("Could not generate DSA keys!");
                     e.printStackTrace();
                 } catch (ClassNotFoundException | IOException e) {
                     e.printStackTrace();
@@ -590,8 +598,8 @@ public class MainActivity extends BaseActivity implements MainMvpView {
 
     //@Override
     public void showEmptyContacts() {
-        showToast("Você não possui nenhum amigo");
-    } // que frase bad, hahaha
+        showToast("No contacts.");
+    }
 
     //@Override
     public void showError(String error) {
@@ -613,7 +621,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         @Override
         public void onReceive(Context context, Intent intent) {
             MessageResponse mes = (MessageResponse) intent.getSerializableExtra("message");
-            showToast("Nova mensagem recebida de " + mes.getSender().getId());
+            showToast("New message from " + mes.getSender().getId());
             ContactDatabaseHelper dbHelper = new ContactDatabaseHelper(context);
             if (dbHelper.search(mes.getSender().getId()).isEmpty()) {
                 mMainPresenter.addContact(getApplicationContext(), mes.getSender());
@@ -629,9 +637,9 @@ public class MainActivity extends BaseActivity implements MainMvpView {
                 SignatureResponse mes = (SignatureResponse) intent.getSerializableExtra("message");
                 me.setChatPublicKeyRingEncoded(PGPManagerSingleton.getInstance().getPublicKeyRing().getEncoded());
                 if (mes.getTrust()) {
-                    showToast(mes.getIdentifier() + " acabou de assinar seu certificado!");
+                    showToast(mes.getIdentifier() + " just signed your certificate!");
                 } else {
-                    showToast(mes.getIdentifier() + " acabou de revocar a assinatura em seu certificado!");
+                    showToast(mes.getIdentifier() + " just revoked the signature on your certificate!");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -652,24 +660,18 @@ public class MainActivity extends BaseActivity implements MainMvpView {
                         FuturePut fput = DHT.putProtected("chatAddress", new InetSocketAddress(me.getIp(), mChatPort));
                         if (fput.isFailed()) {
                             Log.i("DHT", "[DHT] Chat address update failed: " + fput.failedReason());
-                            showMessage("Atualização de endereço de chat falhou!");
+                            showMessage("Chat address update failed!");
                         }
                         Log.i("DHT", "[DHT] Broadcasting my public PGP chat key");
                         fput = DHT.putProtected("chatPublicKey", PGPManagerSingleton.getInstance().getPublicKeyRing().getEncoded());
                         if (fput.isFailed()) {
                             Log.i("DHT", "[DHT] Chat public key PGP update failed: " + fput.failedReason());
-                            showMessage("Atualização de chave PGP pública falhou!");
+                            showMessage("Chat public PGP key update failed!");
                         }
-                        Log.i("DHT", "[DHT] Broadcasting my public ECDSA chat key");
-                        fput = DHT.putProtected("ecdsaPublicKey", SignatureECDSAManagerSingleton.getInstance().getEcdsaPublicKeyRing().getEncoded());
-                        if (fput.isFailed()) {
-                            Log.i("DHT", "[DHT] Chat public key ECDSA update failed: " + fput.failedReason());
-                            showMessage("Atualização de chave ECDSA pública falhou!");
-                        }
-                        showMessage("Conectado à rede DHT!");
+                        showMessage("Connected to the DHT network!");
                     } catch (DHTException.UsernameAlreadyTakenException e) {
                         e.printStackTrace();
-                        showMessage("Nome de usuário não está disponível!");
+                        showMessage("Username not available!");
                     } catch (IOException | ClassNotFoundException e) {
                         e.printStackTrace();
                     } catch (Exception e) {
@@ -681,3 +683,25 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         }
     }
 }
+
+
+//public class MainActivity extends BaseActivity {
+//
+//    @Override
+//    protected void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//    }
+//
+//    @Override
+//    protected void onStart() {
+//        super.onStart();
+//
+//        Log.d("[Benchmark]", "On Start");
+//
+//        try {
+//            SignECDSABenchmark ecdasBenchmark = new SignECDSABenchmark();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+//}

@@ -43,7 +43,7 @@ public class ChatReceiver implements Runnable {
                     if (connection.isClosed() || !connection.isConnected()) {
                         break;
                     }
-                    DataInputStream dIn = new DataInputStream(this.connection.getInputStream());
+                    DataInputStream dIn = new DataInputStream(this.connection.getInputStream());  //TODO: Acho que é aqui que recebe a msg. Ver se dá pra receber duas.
 
                     int length = dIn.readInt();                    // read length of incoming message
                     if(length > 0) {
