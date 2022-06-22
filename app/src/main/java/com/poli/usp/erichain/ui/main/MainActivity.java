@@ -89,9 +89,8 @@ public class MainActivity extends BaseActivity implements MainMvpView {
     @BindView(R.id.recyclerview)
     RecyclerView mRecyclerView;
 
-    // public String trackerAddress = "13.59.232.73";
-    public String trackerAddress = "192.168.15.3";
-    // public String trackerAddress = "FE80:0:0:0:7CEB:534A:C5BF:870D";
+    public String trackerAddress = "192.168.15.2";
+    // public String trackerAddress = "[FE80:0:0:0:7CEB:534A:C5BF:870D]";
     public int trackerPort = 4001;
 
     private Pattern pattern;

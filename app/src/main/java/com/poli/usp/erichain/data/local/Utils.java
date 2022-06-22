@@ -144,7 +144,7 @@ public class Utils {
 
             KeyPairGenerator kpg = KeyPairGenerator.getInstance(type, "SC");
             SecureRandom secRandom = SecureRandom.getInstance("SHA1PRNG");
-            kpg.initialize(256, secRandom); // TODO acertar esse pedaço...que tá gerando os erros (vide telegram)
+            kpg.initialize(256, secRandom);
 
             KeyPair keyPair = kpg.generateKeyPair();
             X509Certificate cert = generateCertificate(type, keyPair);
