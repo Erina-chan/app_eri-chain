@@ -12,6 +12,7 @@ import java.security.PublicKey;
 /**
  * Created by Bruno on 14-Aug-17.
  * Modified by aerina on 12-Jul-21.
+ * Modified by aerina on 28-Jun-22.
  */
 
 public class Contact implements Serializable {
@@ -22,8 +23,9 @@ public class Contact implements Serializable {
     private String name;
     private String ip;
     private int port;
-    private byte[] signPublicKeyEncoded;
-    private byte[] chatPublicKeyRingEncoded;
+    private byte[] signPublicKeyEncoded;  // ECDSA
+    private byte[] chatPublicKeyRingEncoded;  // PGP
+    private byte[] seedPublicKeyEncoded;  // ECDH
     private boolean trust;
 
     public Contact(String id) {
@@ -81,6 +83,14 @@ public class Contact implements Serializable {
         this.chatPublicKeyRingEncoded = chatPublicKeyRingEncoded;
     }
 
+    public byte[] getSeedPublicKeyEncoded() {
+        return seedPublicKeyEncoded;
+    }
+
+    public void setSeedPublicKeyEncoded(byte[] seedPublicKeyRingEncoded) {
+        this.seedPublicKeyEncoded = seedPublicKeyRingEncoded;
+    }
+
     public boolean isTrusted() {
         return trust;
     }
@@ -100,6 +110,19 @@ public class Contact implements Serializable {
             if (signPublicKey == null) throw new ContactNotFoundException();
             final byte[] chatPublicKeyRingEncoded = (byte[]) DHT.getProtected("chatPublicKey", signPublicKey);
             this.setChatPublicKeyRingEncoded(chatPublicKeyRingEncoded);
+            this.save(context);
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateSeedPublicKey(Context context) throws ContactNotFoundException {
+        try {
+            final PublicKey seedPublicKey = (PublicKey) DHT.get(this.getId());
+            if (seedPublicKey == null) throw new ContactNotFoundException();
+            final byte[] seedPublicKeyRingEncoded = (byte[]) DHT.getProtected("seedPublicKey", seedPublicKey);
+            this.setSeedPublicKeyEncoded(seedPublicKeyRingEncoded);
             this.save(context);
 
         } catch (IOException | ClassNotFoundException e) {

@@ -18,14 +18,11 @@ import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
 
-import static com.poli.usp.erichain.data.local.Utils.hexStringToByteArray;
-
 public class SignECDSABenchmark {
     /** Security level */
     public static final int SEC_LEVEL = 128;
 
-    public static int BENCH = 2;
-    public static int subLoop = 100;
+    public static int subLoop = 500;
 
     /* Instances to cryptographic protocols:
      * Message Digest: SHA256
@@ -43,10 +40,10 @@ public class SignECDSABenchmark {
         // creat contact
         Contact contato = new Contact("userTest", "usertest");
 
-        // sha-3 256 "erina" = 538972575dfafcb026f4f116f70093073e3c1062c20a02cc32e0e002a10964d2
+        byte[] prevHash0 = new byte[256];
         // creat message with 5 chars
         MessageResponse msg = new MessageResponse(contato, contato, "Mensagem arbitária",
-                null, hexStringToByteArray("538972575dfafcb026f4f116f70093073e3c1062c20a02cc32e0e002a10964d2"));
+                null, prevHash0);
 
         try {
             byte[] serializedMsg = Utils.serialize(msg);
@@ -60,70 +57,56 @@ public class SignECDSABenchmark {
             long time4;
             byte[] signECDSA;
             boolean verifyECDSA;
-            double[] totalAvgSign = new double[BENCH];
-            double[] totalSDSign = new double[BENCH];
-            double[] totalMedSign = new double[BENCH];
-            double[] totalAvgVerify = new double[BENCH];
-            double[] totalSDVerify = new double[BENCH];
-            double[] totalMedVerify = new double[BENCH];
+            double totalAvgSign;
+            double totalSDSign;
+            double totalMedSign;
+            double totalAvgVerify;
+            double totalSDVerify;
+            double totalMedVerify;
 
-            for(int j = 0; j < BENCH; j++) {
-                long[] timeSign = new long[subLoop];
-                long[] timeVerify = new long[subLoop];
+            long[] timeSign = new long[subLoop];
+            long[] timeVerify = new long[subLoop];
 
-                for (int i = 0; i < subLoop; i++) {
-                    time1 = Calendar.getInstance().getTimeInMillis();
-                    // sign
-                    signECDSA = sign(serializedMsg);
-                    time2 = Calendar.getInstance().getTimeInMillis();
-                    timeSign[i] = time2 - time1;
+            for (int i = 0; i < subLoop; i++) {
+                time1 = Calendar.getInstance().getTimeInMillis();
+                // sign
+                signECDSA = sign(serializedMsg);
+                time2 = Calendar.getInstance().getTimeInMillis();
+                timeSign[i] = time2 - time1;
 
-                    time3 = Calendar.getInstance().getTimeInMillis();
-                    verifyECDSA = verify(pk, serializedMsg, signECDSA);
-                 /*if (verifyECDSA) {
-                     Log.d("[Benchmark]", String.format(" Verify %d true", i));
-                 }*/
-                    time4 = Calendar.getInstance().getTimeInMillis();
-                    timeVerify[i] = time4 - time3;
-                }
-
-                // Get sign time average
-                double timeDiff = calculateAVG(timeSign);
-                totalAvgSign[j] = timeDiff;
-
-                //Get sing time standard deviation
-                timeDiff = calculateSD(timeSign);
-                totalSDSign[j] = timeDiff;
-
-                //Get sing time median
-                timeDiff = median(timeSign);
-                totalMedSign[j] = timeDiff;
-
-                // Get verfy time average
-                timeDiff = calculateAVG(timeVerify);
-                totalAvgVerify[j] = timeDiff;
-
-                //Get verify time standard deviation
-                timeDiff = calculateSD(timeVerify);
-                totalSDVerify[j] = timeDiff;
-
-                //Get verify time median
-                timeDiff = median(timeVerify);
-                totalMedVerify[j] = timeDiff;
+                time3 = Calendar.getInstance().getTimeInMillis();
+                verifyECDSA = verify(pk, serializedMsg, signECDSA);
+             /*if (verifyECDSA) {
+                 Log.d("[Benchmark]", String.format(" Verify %d true", i));
+             }*/
+                time4 = Calendar.getInstance().getTimeInMillis();
+                timeVerify[i] = time4 - time3;
             }
 
-            double timeDiff = calculateAVG(totalAvgSign);
-            Log.d("[Benchmark]", String.format("Get sign time average: %.9f", timeDiff));
-            timeDiff = calculateSD(totalSDSign);
-            Log.d("[Benchmark]", String.format("Get sign time standard derviation: %.9f", timeDiff));
-            timeDiff = median(totalMedSign);
-            Log.d("[Benchmark]", String.format("Get sign time median: %.9f", timeDiff));
-            timeDiff = calculateAVG(totalAvgVerify);
-            Log.d("[Benchmark]", String.format("Get verfy time average: %.9f", timeDiff));
-            timeDiff = calculateSD(totalSDVerify);
-            Log.d("[Benchmark]", String.format("Get verify time standard derviation: %.9f", timeDiff));
-            timeDiff = median(totalMedVerify);
-            Log.d("[Benchmark]", String.format("Get verify time median: %.9f", timeDiff));
+            // Get sign time average
+            totalAvgSign = calculateAVG(timeSign);
+            Log.d("[Benchmark]", String.format("Get ECDSA sign time average: %.9f", totalAvgSign));
+
+            //Get sing time standard deviation
+            totalSDSign = calculateSD(timeSign);
+            Log.d("[Benchmark]", String.format("Get ECDSA sign time standard deviation: %.9f", totalSDSign));
+
+            //Get sing time median
+            totalMedSign = median(timeSign);
+            Log.d("[Benchmark]", String.format("Get ECDSA sign time median: %.9f", totalMedSign));
+
+
+            // Get verfy time average
+            totalAvgVerify = calculateAVG(timeVerify);
+            Log.d("[Benchmark]", String.format("Get ECDSA verfy time average: %.9f", totalAvgVerify));
+
+            //Get verify time standard deviation
+            totalSDVerify = calculateSD(timeVerify);
+            Log.d("[Benchmark]", String.format("Get ECDSA verify time standard deviation: %.9f", totalSDVerify));
+
+            //Get verify time median
+            totalMedVerify = median(timeVerify);
+            Log.d("[Benchmark]", String.format("Get ECDSA verify time median: %.9f", totalMedVerify));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -243,31 +226,6 @@ public class SignECDSABenchmark {
         return average;
     }
 
-    public static double calculateSD(double numArray[])
-    {
-        double sum = 0.0, standardDeviation = 0.0;
-        int length = numArray.length;
-        for(double num : numArray) {
-            sum += num;
-        }
-        double mean = sum/(double) length;
-        for(double num: numArray) {
-            standardDeviation += Math.pow(num - mean, 2);
-        }
-        return Math.sqrt(standardDeviation/length);
-    }
-
-    public static double calculateAVG(double numArray[])
-    {
-        double sum = 0.0, average = 0.0;
-        int length = numArray.length;
-        for(double num : numArray) {
-            sum += num;
-        }
-        average = sum/(double) length;
-        return average;
-    }
-
     static double median(long[] values) {
         // sort array
         Arrays.sort(values);
@@ -277,24 +235,6 @@ public class SignECDSABenchmark {
         // check if total number of scores is even
         if (totalElements % 2 == 0) {
             long sumOfMiddleElements = values[totalElements / 2] + values[totalElements / 2 - 1];
-            // calculate average of middle elements
-            median = sumOfMiddleElements / (double) 2;
-        } else {
-            // get the middle element
-            median = (double) values[values.length / 2];
-        }
-        return median;
-    }
-
-    static double median(double[] values) {
-        // sort array
-        Arrays.sort(values);
-        double median;
-        // get count of scores
-        int totalElements = values.length;
-        // check if total number of scores is even
-        if (totalElements % 2 == 0) {
-            double sumOfMiddleElements = values[totalElements / 2] + values[totalElements / 2 - 1];
             // calculate average of middle elements
             median = sumOfMiddleElements / (double) 2;
         } else {

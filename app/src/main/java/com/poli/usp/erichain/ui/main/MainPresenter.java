@@ -15,6 +15,7 @@ import rx.Subscription;
  * Modified by aerina on 01/08/19.
  * Modified by aerina on 12/7/2021.
  * Modified by aerina on 10-may-2022.
+ * Modified by aerina on 29-jun-2022.
  */
 
 public class MainPresenter extends BasePresenter<MainMvpView> {
@@ -51,13 +52,13 @@ public class MainPresenter extends BasePresenter<MainMvpView> {
         mMainMvpView.showContacts(mCachedContacts);
     }
 
-    public void addContact(Context context, String username, String ip, int port, byte[] signPublicKeyEncoded, byte[] chatPublicKeyRingEncoded){
+    public void addContact(Context context, String username, String ip, int port, byte[] signPublicKeyEncoded, byte[] chatPublicKeyRingEncoded, byte[] seedPublicKeyEncoded){
         Contact contact = new Contact(username);
         contact.setIp(ip);
         contact.setPort(port);
         contact.setSignPublicKeyEncoded(signPublicKeyEncoded);
         contact.setChatPublicKeyRingEncoded(chatPublicKeyRingEncoded);
-        // TODO Insert here ECDH key ring
+        contact.setSeedPublicKeyEncoded(seedPublicKeyEncoded);
         addContact(context, contact);
 
     }

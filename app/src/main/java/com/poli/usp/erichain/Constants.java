@@ -6,7 +6,6 @@ package com.poli.usp.erichain;
  * Modified by aerina on 12/08/21.
  */
 public class Constants {
-    // TODO: 11/04/17 fix package name
     public static final String PACKAGE_NAME = "com.poli.usp.erichain";
 
     public static final String EXTRA_MYSELF = PACKAGE_NAME + "EXTRA_MYSELF";
@@ -21,6 +20,7 @@ public class Constants {
     public static final String DB_CONTACT_FIELD_PORT = "port";
     public static final String DB_CONTACT_FIELD_SIGN_ENCODED_KEY = "sign_encoded_key";  // DSA key
     public static final String DB_CONTACT_FIELD_CHAT_ENCODED_KEY = "chat_encoded_key";  // PGP key
+    public static final String DB_CONTACT_FIELD_SEED_ENCODED_KEY = "seed_encoded_key";  // DH key
 
     //    DATABSE CONSTANTS: MESSAGES
     public static final String DB_MESSAGES_TABLE = "messages";

@@ -106,7 +106,7 @@ public class ChatActivity extends BaseActivity implements ChatMvpView{
             @Override
             public void run() {
                 try {
-                    progressDialog.show("Conectando...");
+                    progressDialog.show("Connecting...");
                     friend.updateChatPublicKey(getApplicationContext());
                     if (connectToClient(friend.getIp(), friend.getPort())) {
                         updateActionBar();
@@ -147,7 +147,7 @@ public class ChatActivity extends BaseActivity implements ChatMvpView{
                 final String text = mMessageEditText.getText().toString();
                 // sha-3 256 de "erina" = 538972575dfafcb026f4f116f70093073e3c1062c20a02cc32e0e002a10964d2
                 // This msg0 is used as genesis message in the chain
-                MessageResponse  msg0 = new MessageResponse(me, friend, "mensagem 0",
+                MessageResponse  msg0 = new MessageResponse(me, friend, "message 0",
                         null, hexStringToByteArray("538972575dfafcb026f4f116f70093073e3c1062c20a02cc32e0e002a10964d2"));
                 if (!text.isEmpty()) {
                     final MessageResponse message = new MessageResponse(me, friend);
@@ -170,7 +170,7 @@ public class ChatActivity extends BaseActivity implements ChatMvpView{
                         public void run() {
                             try {
                                 if (friend.getIp() == null) {
-                                    progressDialog.show("Enviando mensagem...");
+                                    progressDialog.show("Sending message...");
                                     lookupAndConnect();
                                     updateActionBar();
                                     progressDialog.hide();
@@ -184,7 +184,7 @@ public class ChatActivity extends BaseActivity implements ChatMvpView{
                                         }
                                     });
                                 } else {
-                                    showToast("Não foi possível enviar a mensagem");
+                                    showToast("Could not send message.");
                                 }
                             } catch (IOException | InterruptedException | ExecutionException e) {
                                 progressDialog.hide();
@@ -261,7 +261,7 @@ public class ChatActivity extends BaseActivity implements ChatMvpView{
     public void showConnectionFailDialog(){
         AlertDialog alertDialog = BaseDialogHelper.createDisclaimerDialog(this, getString(R.string.connection_failed_dialog_tittle),
                 getString(R.string.connection_failed_dialog_msg),
-                "Voltar", new DialogInterface.OnClickListener() {
+                "Back", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         finish();
@@ -334,7 +334,7 @@ public class ChatActivity extends BaseActivity implements ChatMvpView{
     }
     public InetSocketAddress lookupUser() {
         try {
-            PublicKey signPublicKey = Utils.getPublicKeyFromEncoded("DSA", friend.getSignPublicKeyEncoded()); // TODO mudar esse  DSA
+            PublicKey signPublicKey = Utils.getPublicKeyFromEncoded("DSA", friend.getSignPublicKeyEncoded()); // TODO change this "DSA"??
             return (InetSocketAddress) DHT.getProtected("chatAddress", signPublicKey);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();

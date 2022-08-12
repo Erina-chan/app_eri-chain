@@ -40,19 +40,19 @@ public class ExampleUnitTest {
     }
 
     @Test //ok
-    public void sha3_isCorrect(){
+    public void sha3_isCorrect() {
         byte[] hash2 = HashManager.generateSha3("teste");
         assertEquals("c8a2d029074842a6ef31d8d8b6e10714ee16d679f029986fce0bf2ac6a5ceac2", Hex.toHexString(HashManager.generateSha3("teste")));
     }
 
     @Test //ok
-    public void keccak_isCorrect(){
+    public void keccak_isCorrect() {
         byte[] hash2 = HashManager.generateKeccak("teste");
         assertEquals("e0d4f6e915eb01068ecd79ce922236bf16c38b2d88cccffcbc57ed53ef3b74aa", Hex.toHexString(HashManager.generateKeccak("teste")));
     }
 
     @Test //ok
-    public void verifyPrevHash_isTrue(){
+    public void verifyPrevHash_isTrue() {
         Contact sender = new Contact("sender");
         Contact receiver = new Contact("receiver");
 
@@ -65,7 +65,7 @@ public class ExampleUnitTest {
     }
 
     @Test //ok
-    public void verifyPrevHash_isFalse(){
+    public void verifyPrevHash_isFalse() {
         Contact sender = new Contact("sender");
         Contact receiver = new Contact("receiver");
         MessageResponse messageTest1 = new MessageResponse(sender, receiver, "teste", null, hexStringToByteArray("538972575dfafcb026f4f116f70093073e3c1062c20a02cc32e0e002a10964d2"));
@@ -77,7 +77,7 @@ public class ExampleUnitTest {
     }
 
     @Test //not ok... Need to change the code to provide selective disclosure
-    public void messageGenerateHash_isCorrect(){
+    public void messageGenerateHash_isCorrect() {
         Contact sender = new Contact("sender");
         Contact receiver = new Contact("receiver");
 
@@ -98,8 +98,6 @@ public class ExampleUnitTest {
         }
     }
 
-    // TODO verify ECDSA -> Test class SignatureECDSAManager and verify class SignECDSABenchmark
-
     @Test //ok
     public void ecdhKeyExchangeTest() throws Exception {
         // Using ECDH algorithm by Spongy Castle library.
@@ -119,27 +117,5 @@ public class ExampleUnitTest {
 
         byte[] sharedSecret = ECDHKeyExchange(secKey, pubKey);
         assertEquals(Hex.toHexString(sharedKey), Hex.toHexString(sharedSecret));
-    }
-
-    @Test //TODO continuar daqui, depois ver o ECDSA
-    public void FullEcdhKeyExchange(){
-        // Generate Contact A
-        // Genetare Contact A 's ECDH key pair
-        // Save Contact A 's ECDH public key at DHT
-        Contact userA = new Contact("userA");
-
-        // Generate Contact B
-        // Genetare Contact B 's ECDH key pair
-        // Save Contact B 's ECDH public key at DHT
-        Contact userB = new Contact("userB");
-
-        // User A catches User B informations (ECDH public key) from DHT
-        // User A generates shared key
-
-        // User B catches User A informations (ECDH public key) from DHT
-        // User B generates shared key
-
-        // Compare SheredKeyA == SharedKeyB? I hope soo.
-        //assertEquals(Hex.toHexString(sharedKeyA), Hex.toHexString(sharedKeyB));
     }
 }
